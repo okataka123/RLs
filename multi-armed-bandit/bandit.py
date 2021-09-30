@@ -22,8 +22,8 @@ class EpsilonGreedy:
         self.epsilon = epsilon
 
     def initialize(self, n_arms):
-        self.n = np.zeros(n_arms) # Number of trials of arms
-        self.v = np.zeros(n_arms) # values of arms
+        self.n = np.zeros(n_arms) # Number of trials of each arms
+        self.v = np.zeros(n_arms) # values of each arms
 
     def select_arm(self):
         """
@@ -48,14 +48,15 @@ class EpsilonGreedy:
 
 class UCB1:
     def initialize(self, n_arms):
-        self.n = np.zeros(n_arms) # Number of trials of arms
-        self.w = np.zeros(n_arms) # Number of success count 
-        self.v = np.zeros(n_arms) # values of armsA
+        self.n = np.zeros(n_arms) # Number of trials of each arms
+        self.w = np.zeros(n_arms) # Number of success of each arms
+        self.v = np.zeros(n_arms) # values of each arms
 
     def select_arm(self):
         """
         choose an arm according to the policy.
         """
+        # try all arms at least once.
         for i in range(len(self.n)):
             if self.n[i] == 0:
                 return i
@@ -66,6 +67,7 @@ class UCB1:
         if reward == 1.0:
             self.w[chosen_arm] += 1
 
+        # if there's arm that has never tried, values are not updated.
         for i in range(len(self.n)):
             if self.n[i] == 0:
                 return 
@@ -78,6 +80,11 @@ class UCB1:
 
 # execute simulation
 def play(algo, arms, num_sims, num_time):
+    """
+    Args:
+        num_sims(int): times of simulation.
+        num_time(int): number of one set games.
+    """
     # history
     times = np.zeros(num_sims * num_time) # number of games
     rewards = np.zeros(num_sims * num_time)
@@ -87,7 +94,7 @@ def play(algo, arms, num_sims, num_time):
 
         for time in range(num_time):
             index = sim * num_time + time
-
+            # history
             times[index] = time + 1
             chosen_arm = algo.select_arm()
             reward = arms[chosen_arm].draw()
