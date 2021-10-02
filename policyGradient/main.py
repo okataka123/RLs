@@ -126,6 +126,9 @@ for episode in range(10000):
     if pi_delta < stop_epsilon:
         break
 
+#print('final theta =', theta)
+#print('final pi =', pi)
+
 def animate(i):
     state = s_a_history[i][0]
     circle.set_data((state%3)+0.5, 2.5-int(state/3))
