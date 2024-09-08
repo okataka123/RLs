@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # PyTorch
 
-import gym
+import gymnasium as gym
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -50,7 +50,7 @@ class Memory:
 
 ##############################################################################################
 # main
-env = gym.make('CartPole-v0')
+env = gym.make('CartPole-v0', render_mode='human')
 state_size = env.observation_space.shape[0]
 action_size = env.action_space.n
 
@@ -62,18 +62,7 @@ optimizer = optim.Adam(main_qn.parameters(), lr=0.001)
 criterion = nn.SmoothL1Loss()
 
 # learning
-#state = env.reset()
-state = env.reset()[0]
-
-print(env.observation_space)
-print('#####################################')
-print('state =', state)
-print('#####################################')
-print('len(state) =', len(state))
-print('state_size =', state_size)
-print('action_size =', action_size)
-#assert False
-
+state, _ = env.reset()
 state = np.reshape(state, [1, state_size])
 state = torch.FloatTensor(state)
 
@@ -98,15 +87,12 @@ for episode in range(1, config.num_episodes+1):
             with torch.no_grad():
                 action = np.argmax(main_qn(state).numpy())
 
-        # for debug
-        print('env.step(action) =', env.step(action))
-
-        next_state, _, done, _ = env.step(action)[0]
-        env.render()
+        next_state, reward, terminated, truncated, _ = env.step(action)
+#        env.render()
         next_state = np.reshape(next_state, [1, state_size])
         next_state = torch.FloatTensor(next_state)
 
-        if done:
+        if terminated or truncated:
             # assignment reward 
             if step >= 190:
                 success_count += 1
@@ -155,7 +141,7 @@ for episode in range(1, config.num_episodes+1):
             optimizer.step()
 
         # when finishing episode
-        if done:
+        if terminated or truncated:
             break
 
     print('episode: {}, step: {}, epsilon: {:.4f}'.format(episode, step, epsilon))
@@ -164,7 +150,7 @@ for episode in range(1, config.num_episodes+1):
     if success_count >= 5:
         break
 
-    state = env.reset()
+    state, _ = env.reset()
     state = np.reshape(state, [1, state_size])
     state = torch.FloatTensor(state)
 
